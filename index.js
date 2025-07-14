@@ -1,25 +1,24 @@
-const express = require('express');
-const axios = require('axios');
+import express from 'express';
+import fetch from 'node-fetch';
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-app.get('/convert', async (req, res) => {
-    const imageUrl = req.query.url;
-    if (!imageUrl) return res.status(400).json({ error: 'Missing image URL' });
+app.get('/image', async (req, res) => {
+  const imageUrl = req.query.url;
+  if (!imageUrl) return res.status(400).send("Missing image URL");
 
-    try {
-        const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-        const base64 = Buffer.from(response.data).toString('base64');
-        const contentType = response.headers['content-type'] || 'image/jpeg';
-        const dataUrl = `data:${contentType};base64,${base64}`;
-        res.json({ base64: dataUrl });
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch or convert image', message: err.message });
-    }
+  try {
+    const response = await fetch(imageUrl);
+    const contentType = response.headers.get("content-type");
+
+    res.setHeader('Content-Type', contentType);
+    response.body.pipe(res);
+  } catch (e) {
+    res.status(500).send("Failed to fetch image");
+  }
 });
 
-app.get('/', (req, res) => {
-    res.send('Image-to-Base64 converter is live.');
+app.listen(port, () => {
+  console.log(`Proxy server listening at http://localhost:${port}`);
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
