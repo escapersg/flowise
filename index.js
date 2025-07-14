@@ -6,7 +6,9 @@ const port = process.env.PORT || 3000;
 
 app.get('/image', async (req, res) => {
   const imageUrl = req.query.url;
-  if (!imageUrl) return res.status(400).send("Missing image URL");
+  if (!imageUrl) {
+    return res.status(400).send('Missing image URL');
+  }
 
   try {
     const response = await fetch(imageUrl);
@@ -15,10 +17,11 @@ app.get('/image', async (req, res) => {
     res.setHeader('Content-Type', contentType);
     response.body.pipe(res);
   } catch (e) {
-    res.status(500).send("Failed to fetch image");
+    console.error(e);
+    res.status(500).send('Failed to fetch image');
   }
 });
 
 app.listen(port, () => {
-  console.log(`Proxy server listening at http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
